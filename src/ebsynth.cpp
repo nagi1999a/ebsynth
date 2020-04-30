@@ -5,9 +5,12 @@
 #include "ebsynth.h"
 #include "ebsynth_cpu.h"
 #include "ebsynth_cuda.h"
+#include "serialize.h"
 
 #include <cstdio>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 
 EBSYNTH_API
 void ebsynthRun(int    ebsynthBackend,
@@ -32,13 +35,14 @@ void ebsynthRun(int    ebsynthBackend,
                 int*   stopThresholdPerLevel,
                 int    extraPass3x3,
                 void*  outputNnfData,
-                void*  outputImageData)
+                void*  outputImageData,
+		void*  outputErrorData)
 {
-  void (*backendDispatch)(int,int,int,int,void*,void*,int,int,void*,void*,float*,float*,float,int,int,int,int*,int*,int*,int,void*,void*) = 0;
+  void (*backendDispatch)(int,int,int,int,void*,void*,int,int,void*,void*,float*,float*,float,int,int,int,int*,int*,int*,int,void*,void*, void*) = ebsynthRunCpu;
   
-  if      (ebsynthBackend==EBSYNTH_BACKEND_CPU ) { backendDispatch = ebsynthRunCpu;  }
-  else if (ebsynthBackend==EBSYNTH_BACKEND_CUDA) { backendDispatch = ebsynthRunCuda; }
-  else if (ebsynthBackend==EBSYNTH_BACKEND_AUTO) { backendDispatch = ebsynthBackendAvailableCuda() ? ebsynthRunCuda : ebsynthRunCpu; }
+  //if      (ebsynthBackend==EBSYNTH_BACKEND_CPU ) { backendDispatch = ebsynthRunCpu;  }
+  //else if (ebsynthBackend==EBSYNTH_BACKEND_CUDA) { backendDispatch = ebsynthRunCuda; }
+  //else if (ebsynthBackend==EBSYNTH_BACKEND_AUTO) { backendDispatch = ebsynthBackendAvailableCuda() ? ebsynthRunCuda : ebsynthRunCpu; }
   
   if (backendDispatch!=0)
   {
@@ -63,7 +67,8 @@ void ebsynthRun(int    ebsynthBackend,
                     stopThresholdPerLevel,
                     extraPass3x3,
                     outputNnfData,
-                    outputImageData);
+                    outputImageData,
+		    outputErrorData);
   }
 }
 
@@ -516,7 +521,7 @@ int main(int argc,char** argv)
   }
 
   std::vector<unsigned char> output(targetWidth*targetHeight*numStyleChannelsTotal);
-
+  std::vector<float> out_error(targetWidth*targetHeight);
   printf("uniformity: %.0f\n",uniformityWeight);
   printf("patchsize: %d\n",patchSize);
   printf("pyramidlevels: %d\n",numPyramidLevels);
@@ -548,10 +553,23 @@ int main(int argc,char** argv)
              stopThresholdPerLevel.data(),
              extraPass3x3,
              NULL,
-             output.data());
+             output.data(),
+	     out_error.data());
 
   stbi_write_png(outputFileName.c_str(),targetWidth,targetHeight,numStyleChannelsTotal,output.data(),numStyleChannelsTotal*targetWidth);
+	printf("error out size: %lu\n", out_error.size());
+  size_t last_index = outputFileName.find_last_of(".");
+  std::string rawFileName = outputFileName.substr(0, last_index);
+  std::ofstream error_bin = std::ofstream(rawFileName + ".bin", std::ofstream::binary);
+  
+  serialize(error_bin, out_error);
 
+  std::ifstream error_in = std::ifstream(rawFileName + ".bin", std::ifstream::binary);
+  std::vector<float> in_error(out_error.size());
+  
+  deserialize(error_in, in_error);
+  printf("error in size: %lu\n", in_error.size());
+  printf("error 0: %f", in_error.at(0));
   printf("result was written to %s\n",outputFileName.c_str());
 
   stbi_image_free(sourceStyleData);
