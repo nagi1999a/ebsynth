@@ -557,7 +557,7 @@ int main(int argc,char** argv)
 	     out_error.data());
 
   stbi_write_png(outputFileName.c_str(),targetWidth,targetHeight,numStyleChannelsTotal,output.data(),numStyleChannelsTotal*targetWidth);
-	printf("error out size: %lu\n", out_error.size());
+//	printf("error out size: %lu\n", out_error.size());
   size_t last_index = outputFileName.find_last_of(".");
   std::string rawFileName = outputFileName.substr(0, last_index);
   std::ofstream error_bin = std::ofstream(rawFileName + ".bin", std::ofstream::binary);
@@ -568,10 +568,10 @@ int main(int argc,char** argv)
   std::vector<float> in_error(out_error.size());
   
   deserialize(error_in, in_error);
-  printf("error in size: %lu\n", in_error.size());
-  printf("error 0: %f", in_error.at(0));
-  printf("result was written to %s\n",outputFileName.c_str());
-
+//  printf("error in size: %lu\n", in_error.size());
+//  printf("error 0: %f", in_error.at(0));
+  printf("image result was written to %s\n",outputFileName.c_str());
+  printf("binary result was written to %s\n", rawFileName + ".bin");
   stbi_image_free(sourceStyleData);
 
   for(int i=0;i<numGuides;i++)
