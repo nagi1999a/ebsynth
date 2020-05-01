@@ -2,6 +2,7 @@
 #define SERIALIZE_H
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 template<typename POD>
 std::ostream& serialize(std::ostream& os, std::vector<POD> const& v)
