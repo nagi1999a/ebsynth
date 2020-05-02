@@ -766,7 +766,8 @@ void ebsynthCuda(int    numStyleChannels,
                  int*   stopThresholdPerLevel,
                  int    extraPass3x3,
                  void*  outputNnfData,
-                 void*  outputImageData)
+                 void*  outputImageData,
+		 void*  outputErrorData)
 {
   const int levelCount = numPyramidLevels;
 
@@ -1067,6 +1068,7 @@ void ebsynthCuda(int    numStyleChannels,
     {      
       if (outputNnfData!=NULL) { copy(&outputNnfData,pyramid[level].NNF); }
       copy(&outputImageData,pyramid[level].targetStyle);
+      copy(&outputErrorData,pyramid[level].E);
     }
 
     if ((level<levelCount-1) ||

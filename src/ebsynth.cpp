@@ -571,7 +571,7 @@ int main(int argc,char** argv)
 //  printf("error in size: %lu\n", in_error.size());
 //  printf("error 0: %f", in_error.at(0));
   printf("image result was written to %s\n",outputFileName.c_str());
-  printf("binary result was written to %s\n", rawFileName + ".bin");
+  printf("binary result was written to %s.bin\n", rawFileName.c_str());
   stbi_image_free(sourceStyleData);
 
   for(int i=0;i<numGuides;i++)
