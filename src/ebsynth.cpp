@@ -11,6 +11,7 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+// #include <iostream>
 
 EBSYNTH_API
 void ebsynthRun(int    ebsynthBackend,
@@ -40,9 +41,11 @@ void ebsynthRun(int    ebsynthBackend,
 {
   void (*backendDispatch)(int,int,int,int,void*,void*,int,int,void*,void*,float*,float*,float,int,int,int,int*,int*,int*,int,void*,void*, void*) = ebsynthRunCpu;
   
-  //if      (ebsynthBackend==EBSYNTH_BACKEND_CPU ) { backendDispatch = ebsynthRunCpu;  }
-  //else if (ebsynthBackend==EBSYNTH_BACKEND_CUDA) { backendDispatch = ebsynthRunCuda; }
-  //else if (ebsynthBackend==EBSYNTH_BACKEND_AUTO) { backendDispatch = ebsynthBackendAvailableCuda() ? ebsynthRunCuda : ebsynthRunCpu; }
+  if      (ebsynthBackend==EBSYNTH_BACKEND_CPU ) { backendDispatch = ebsynthRunCpu;  }
+  else if (ebsynthBackend==EBSYNTH_BACKEND_CUDA) { backendDispatch = ebsynthRunCuda; 
+                                                    // std::cout << "Use Cuda as Backend" << std::endl;
+                                                 }
+  else if (ebsynthBackend==EBSYNTH_BACKEND_AUTO) { backendDispatch = ebsynthBackendAvailableCuda() ? ebsynthRunCuda : ebsynthRunCpu; }
   
   if (backendDispatch!=0)
   {
